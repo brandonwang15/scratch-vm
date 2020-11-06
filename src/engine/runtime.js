@@ -297,6 +297,12 @@ class Runtime extends EventEmitter {
         this.turboMode = false;
 
         /**
+         * Whether the project is in "single step mode."
+         * @type {Boolean}
+         */
+        this.singleStepMode = false;
+
+        /**
          * Whether the project is in "compatibility mode" (30 TPS).
          * @type {Boolean}
          */
@@ -691,6 +697,7 @@ class Runtime extends EventEmitter {
      * How rapidly we try to step threads by default, in ms.
      */
     static get THREAD_STEP_INTERVAL () {
+        // return 1000 / 60;
         return 1000 / 60;
     }
 

@@ -212,6 +212,12 @@ class Sequencer {
                 execute(this, thread);
             }
             thread.blockGlowInFrame = currentBlockId;
+            
+            // TODO(bdnwang):
+            // end after executing the first block
+            // thread.status = Thread.STATUS_DONE;
+            // return;
+            
             // If the thread has yielded or is waiting, yield to other threads.
             if (thread.status === Thread.STATUS_YIELD) {
                 // Mark as running for next iteration.

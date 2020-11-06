@@ -17,6 +17,7 @@ class Scratch3MotionBlocks {
      */
     getPrimitives () {
         return {
+            motion_move100steps: this.move100Steps,
             motion_movesteps: this.moveSteps,
             motion_gotoxy: this.goToXY,
             motion_goto: this.goTo,
@@ -59,6 +60,15 @@ class Scratch3MotionBlocks {
                 getId: targetId => `${targetId}_direction`
             }
         };
+    }
+
+    // TODO: testing if we can add a new function
+    move100Steps (args, util) {
+        const steps = 100;
+        const radians = MathUtil.degToRad(90 - util.target.direction);
+        const dx = steps * Math.cos(radians);
+        const dy = steps * Math.sin(radians);
+        util.target.setXY(util.target.x + dx, util.target.y + dy);
     }
 
     moveSteps (args, util) {

@@ -185,6 +185,7 @@ class VirtualMachine extends EventEmitter {
      * @param {boolean} turboModeOn Whether turbo mode should be set.
      */
     setTurboMode (turboModeOn) {
+        console.log("called setTurbMode()");
         this.runtime.turboMode = !!turboModeOn;
         if (this.runtime.turboMode) {
             this.emit(Runtime.TURBO_MODE_ON);
@@ -192,6 +193,21 @@ class VirtualMachine extends EventEmitter {
             this.emit(Runtime.TURBO_MODE_OFF);
         }
     }
+
+    /**
+     * Set whether the VM is in "single step mode."
+     * TODO(bdnwang):
+     * @param {boolean} singleStepModeOn Whether single step mode should be set.
+     */
+    setSingleStepMode (singleStepModeOn) {
+        this.runtime.singleStepModeOn = !!singleStepModeOn;
+        if (this.runtime.singleStepModeOn) {
+            // this.emit(Runtime.TURBO_MODE_ON);
+        } else {
+            // this.emit(Runtime.TURBO_MODE_OFF);
+        }
+    }
+
 
     /**
      * Set whether the VM is in 2.0 "compatibility mode."
