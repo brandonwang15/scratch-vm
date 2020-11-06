@@ -203,6 +203,16 @@ class VirtualMachine extends EventEmitter {
         this.runtime.singleStepMode = !!singleStepModeOn;
     }
 
+    /**
+     * Set whether the VM should advance a single step in "single step mode."
+     * TODO(bdnwang):
+     * @param {boolean} doStep Whether doStep should be set
+     */
+    setDoStep (doStep) {
+        this.runtime.doStep = !!doStep;
+    }
+
+
 
     /**
      * Set whether the VM is in 2.0 "compatibility mode."

@@ -98,6 +98,20 @@ class Sequencer {
 
             numActiveThreads = 0;
             let stoppedThread = false;
+
+            let shouldStep = (!this.runtime.singleStepMode || this.runtime.doStep);
+            console.log("Should step: "+shouldStep);
+            if(!shouldStep) {
+                break;
+            }
+
+            // update doStep if necessary - one step each one step for each active thread
+            // since singleStepMode is true, stepThread() will only run one block in each thread before returning
+            if(this.runtime.singleStepMode && this.runtime.doStep) {
+                this.runtime.doStep = false;
+                console.log("stepThreads(): Stepping.");
+            }
+
             // Attempt to run each thread one time.
             const threads = this.runtime.threads;
             for (let i = 0; i < threads.length; i++) {
@@ -174,6 +188,8 @@ class Sequencer {
 
     /**
      * Step the requested thread for as long as necessary.
+     * 
+     * In this.runtime.singleStepMode, immediately returns after stepping one block.
      * @param {!Thread} thread Thread object to step.
      */
     stepThread (thread) {
@@ -190,6 +206,7 @@ class Sequencer {
         }
         // Save the current block ID to notice if we did control flow.
         while ((currentBlockId = thread.peekStack())) {
+            console.log("stepThread(): running next block.");
             let isWarpMode = thread.peekStackFrame().warpMode;
             if (isWarpMode && !thread.warpTimer) {
                 // Initialize warp-mode timer if it hasn't been already.
@@ -278,10 +295,11 @@ class Sequencer {
             }
 
             // if the single step flag is set then stop here, only execute one block at a time
+            console.log("singleStepMode: "+this.runtime.singleStepMode);
             if (this.runtime.singleStepMode) {
                 console.log("stepThread(): single step short circuit, exiting.");
                 return;
-            }
+            } 
         }
     }
 

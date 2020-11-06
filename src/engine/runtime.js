@@ -303,6 +303,13 @@ class Runtime extends EventEmitter {
         this.singleStepMode = false;
 
         /**
+         * Whether the project should advance a step when in "single step mode."
+         * TODO(bdnwang): currently, a single "step" advances EACH active thread, by one step
+         * @type {Boolean}
+         */
+        this.doSingleStep = false;
+
+        /**
          * Whether the project is in "compatibility mode" (30 TPS).
          * @type {Boolean}
          */
