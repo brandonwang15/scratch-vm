@@ -213,11 +213,6 @@ class Sequencer {
             }
             thread.blockGlowInFrame = currentBlockId;
             
-            // TODO(bdnwang):
-            // end after executing the first block
-            // thread.status = Thread.STATUS_DONE;
-            // return;
-            
             // If the thread has yielded or is waiting, yield to other threads.
             if (thread.status === Thread.STATUS_YIELD) {
                 // Mark as running for next iteration.
@@ -248,8 +243,11 @@ class Sequencer {
                 if (thread.stack.length === 0) {
                     // No more stack to run!
                     thread.status = Thread.STATUS_DONE;
+                    console.log("stepThread(): no more stack to run, exiting.");
                     return;
                 }
+
+                console.log("stepThread(): no next block found.");
 
                 const stackFrame = thread.peekStackFrame();
                 isWarpMode = stackFrame.warpMode;
@@ -277,6 +275,12 @@ class Sequencer {
                 }
                 // Get next block of existing block on the stack.
                 thread.goToNextBlock();
+            }
+
+            // if the single step flag is set then stop here, only execute one block at a time
+            if (this.runtime.singleStepMode) {
+                console.log("stepThread(): single step short circuit, exiting.");
+                return;
             }
         }
     }

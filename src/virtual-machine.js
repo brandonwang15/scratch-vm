@@ -200,12 +200,7 @@ class VirtualMachine extends EventEmitter {
      * @param {boolean} singleStepModeOn Whether single step mode should be set.
      */
     setSingleStepMode (singleStepModeOn) {
-        this.runtime.singleStepModeOn = !!singleStepModeOn;
-        if (this.runtime.singleStepModeOn) {
-            // this.emit(Runtime.TURBO_MODE_ON);
-        } else {
-            // this.emit(Runtime.TURBO_MODE_OFF);
-        }
+        this.runtime.singleStepMode = !!singleStepModeOn;
     }
 
 
