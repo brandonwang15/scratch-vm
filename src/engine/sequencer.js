@@ -168,13 +168,16 @@ class Sequencer {
                     
                     // check if current thread finished
                     if (this.runtime.currentThreadRef == null) {
-                        // set to next active thread
-                        for (let j = 0; j < threads.length; j++) {
-                            const nextThread = threads[j];
+                        // set to next active thread (search threads list starting after current thread, and wrap around)
+                        // TODO(bdnwang): loop condition: check correctness / cleaniness
+                        for (let offset = 0; offset < threads.length; offset++) {
+                            const nextIndex = (i+1) + offset;
+                            nextIndex = nextIndex % threads.length;
+                            const nextThread = threads[nextIndex];
                             if (nextThread.status === Thread.STATUS_RUNNING ||
                                 nextThread.status === Thread.STATUS_YIELD) {
                                     this.runtime.currentThreadRef = nextThread;
-                                    this.runtime.nextThreadIndex = j;
+                                    this.runtime.nextThreadIndex = nextIndex;
                                     break;
                                 }
                         }
