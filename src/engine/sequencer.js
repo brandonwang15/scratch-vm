@@ -115,6 +115,8 @@ class Sequencer {
             const threads = this.runtime.threads;
             for (let i = 0; i < threads.length; i++) {
                 const activeThread = this.activeThread = threads[i];
+
+                
                 // Check if the thread is done so it is not executed.
                 if (activeThread.stack.length === 0 ||
                     activeThread.status === Thread.STATUS_DONE) {
@@ -127,8 +129,32 @@ class Sequencer {
                     // Clear single-tick yield from the last call of `stepThreads`.
                     activeThread.status = Thread.STATUS_RUNNING;
                 }
+
+                // Handle runnable threads
                 if (activeThread.status === Thread.STATUS_RUNNING ||
                     activeThread.status === Thread.STATUS_YIELD) {
+
+                    // Single-step mode has special conditions for running a thread. 
+                    // We keep track of the thread currently being stepped through, and defer stepping any other threads until the
+                    // current thread has completed stepping.
+                    // (This emulates the way multiple threads are executed when run normally.)
+                    if (this.runtime.singleStepMode){
+                        // Initially, there is no current thread for single-stepping. So we set it to the first runnable thread we encounter here.
+                        if (this.runtime.currentThreadRef == null) {
+                            this.runtime.nextThreadIndex = i;
+                            this.runtime.currentThreadRef = activeThread;
+                        }
+
+                        if (activeThread != this.runtime.currentThreadRef) {
+                            // If not the current thread, skip it
+                            continue;
+                        } else { 
+                            console.log("Found matching thread for nextThreadIndex: %d", this.runtime.nextThreadIndex);
+                            // Otherwise, continue on to step the thread below.
+                        }
+                    } 
+
+
                     // Normal-mode thread: step.
                     if (this.runtime.profiler !== null) {
                         if (stepThreadProfilerId === -1) {
@@ -139,6 +165,21 @@ class Sequencer {
                         this.runtime.profiler.increment(stepThreadProfilerId);
                     }
                     this.stepThread(activeThread);
+                    
+                    // check if current thread finished
+                    if (this.runtime.currentThreadRef == null) {
+                        // set to next active thread
+                        for (let j = 0; j < threads.length; j++) {
+                            const nextThread = threads[j];
+                            if (nextThread.status === Thread.STATUS_RUNNING ||
+                                nextThread.status === Thread.STATUS_YIELD) {
+                                    this.runtime.currentThreadRef = nextThread;
+                                    this.runtime.nextThreadIndex = j;
+                                    break;
+                                }
+                        }
+                    }
+
                     activeThread.warpTimer = null;
                     if (activeThread.isKilled) {
                         i--; // if the thread is removed from the list (killed), do not increase index
@@ -153,7 +194,25 @@ class Sequencer {
                     activeThread.status === Thread.STATUS_DONE) {
                     // Finished with this thread.
                     stoppedThread = true;
+            
+                    // // TODO: this may yield divergent behavior from normal execution, because if currentThreadRef = null
+                    // // it will set the first occuring active thread to be the next current thread.
+                    // // Consider the case where threads[0] = unactive, threads[1] = active, threads[2] = active upon startup
+                    // // - current thread will first be set to threads[1] and run to its first yield point
+                    // // - the next thread to be run, in normal execution would be thread[2]
+                    // // - but in single step mode, IF thread[0] becomes runnable in the meantime, we would instead set thread[0] to be the currnet thread. NOT thread[2]
+                    // if (this.runtime.singleStepMode) {
+                    //     this.runtime.currentThreadRef = null;
+                    //     this.runtime.nextThreadIndex = null;
+                    // }
                 }
+
+                // if we're in single step mode and got here, that means we executed a step on the current thread
+                if (this.runtime.singleStepMode) {
+                    break;
+                }
+
+                
             }
             // We successfully ticked once. Prevents running STATUS_YIELD_TICK
             // threads on the next tick.
@@ -239,14 +298,23 @@ class Sequencer {
                     thread.warpTimer.timeElapsed() <= Sequencer.WARP_TIME) {
                     continue;
                 }
+
+                // In single-stepping mode, we are done stepping this thread at the moment
+                this.runtime.currentThreadRef = null;
                 return;
             } else if (thread.status === Thread.STATUS_PROMISE_WAIT) {
                 // A promise was returned by the primitive. Yield the thread
                 // until the promise resolves. Promise resolution should reset
                 // thread.status to Thread.STATUS_RUNNING.
+
+                // In single-stepping mode, we are done stepping this thread at the moment
+                this.runtime.currentThreadRef = null;
                 return;
             } else if (thread.status === Thread.STATUS_YIELD_TICK) {
                 // stepThreads will reset the thread to Thread.STATUS_RUNNING
+                
+                // In single-stepping mode, we are done stepping this thread at the moment
+                this.runtime.currentThreadRef = null;
                 return;
             }
             // If no control flow has happened, switch to next block.
@@ -261,6 +329,9 @@ class Sequencer {
                     // No more stack to run!
                     thread.status = Thread.STATUS_DONE;
                     console.log("stepThread(): no more stack to run, exiting.");
+
+                    // In single-stepping mode, we are done stepping this thread at the moment
+                    this.runtime.currentThreadRef = null;
                     return;
                 }
 
@@ -278,6 +349,9 @@ class Sequencer {
                         thread.warpTimer.timeElapsed() > Sequencer.WARP_TIME) {
                         // Don't do anything to the stack, since loops need
                         // to be re-executed.
+
+                        // In single-stepping mode, we are done stepping this thread at the moment
+                        this.runtime.currentThreadRef = null;
                         return;
                     }
                     // Don't go to the next block for this level of the stack,
@@ -288,6 +362,10 @@ class Sequencer {
                     // This level of the stack was waiting for a value.
                     // This means a reporter has just returned - so don't go
                     // to the next block for this level of the stack.
+                    
+                    // TODO(bdnwang): I'm not sure what's this for
+                    // In single-stepping mode, we are done stepping this thread at the moment
+                    this.runtime.currentThreadRef = null;
                     return;
                 }
                 // Get next block of existing block on the stack.
@@ -298,6 +376,9 @@ class Sequencer {
             console.log("singleStepMode: "+this.runtime.singleStepMode);
             if (this.runtime.singleStepMode) {
                 console.log("stepThread(): single step short circuit, exiting.");
+
+                // do NOT clear this.runtime.currentThreadRef
+                // we want to keep executing this thread until we hit a stopping point, so currenThreadRef should still be set to this thread
                 return;
             } 
         }

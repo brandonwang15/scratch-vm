@@ -295,6 +295,8 @@ class Runtime extends EventEmitter {
          * @type {Boolean}
          */
         this.turboMode = false;
+        
+        // TODO: single stepper related state
 
         /**
          * Whether the project is in "single step mode."
@@ -308,6 +310,16 @@ class Runtime extends EventEmitter {
          * @type {Boolean}
          */
         this.doSingleStep = false;
+
+        /**
+         * When in single-step mode, the index into this.threads specifying the current thread being stepped.
+         * @type {number}
+         */
+        this.nextThreadIndex = -1;
+        this.currentThreadRef = null;
+
+        // --- end single stepper related state --- //
+
 
         /**
          * Whether the project is in "compatibility mode" (30 TPS).
@@ -1993,6 +2005,14 @@ class Runtime extends EventEmitter {
         this.emit(Runtime.PROJECT_START);
         this.ioDevices.clock.resetProjectTimer();
         this.targets.forEach(target => target.clearEdgeActivatedValues());
+      
+      
+        // TODO(bdnwang): seems hacky to stick initialization code here. is there a better place?
+        // reset single-step related state
+        console.log("runtime.start(): resetting single-step related state.");
+        this.doSingleStep = false;
+        this.currentThreadRef = null;
+      
         // Inform all targets of the green flag.
         for (let i = 0; i < this.targets.length; i++) {
             this.targets[i].onGreenFlag();
@@ -2578,6 +2598,7 @@ class Runtime extends EventEmitter {
             interval = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
         }
         this.currentStepTime = interval;
+
         this._steppingInterval = setInterval(() => {
             this._step();
         }, interval);
