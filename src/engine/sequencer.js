@@ -204,6 +204,7 @@ class Sequencer {
                 return;
             }
         }
+        console.log("stepThread(): new call for thread %o.", thread);
         // Save the current block ID to notice if we did control flow.
         while ((currentBlockId = thread.peekStack())) {
             console.log("stepThread(): running next block.");

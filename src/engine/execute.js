@@ -494,7 +494,7 @@ const execute = function (sequencer, thread) {
         const opCached = ops[i];
 
         const blockFunction = opCached._blockFunction;
-
+        console.log("execute(): [%d of %d], blockFuncton name = %s.", i+1, length, blockFunction.name);
         // Update values for arguments (inputs).
         const argValues = opCached._argValues;
 
