@@ -100,7 +100,6 @@ class Sequencer {
             let stoppedThread = false;
 
             let shouldStep = (!this.runtime.singleStepMode || this.runtime.doStep);
-            console.log("Should step: "+shouldStep);
             if(!shouldStep) {
                 break;
             }
