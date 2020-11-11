@@ -23,6 +23,7 @@ class Scratch3ControlBlocks {
      */
     getPrimitives () {
         return {
+            control_breakpoint: this.breakpoint,
             control_repeat: this.repeat,
             control_repeat_until: this.repeatUntil,
             control_while: this.repeatWhile,
@@ -50,6 +51,10 @@ class Scratch3ControlBlocks {
         };
     }
 
+    breakpoint (args, util) {
+        console.log("BREAKPOINT block body");
+    }
+    
     repeat (args, util) {
         const times = Math.round(Cast.toNumber(args.TIMES));
         // Initialize loop
@@ -67,6 +72,7 @@ class Scratch3ControlBlocks {
         }
     }
 
+    
     repeatUntil (args, util) {
         const condition = Cast.toBoolean(args.CONDITION);
         // If the condition is false (repeat UNTIL), start the branch.
