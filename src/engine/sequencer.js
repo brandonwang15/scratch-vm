@@ -292,7 +292,7 @@ class Sequencer {
 
                 // Handle breakpoint blocks
                 let currentBlock = thread.blockContainer.getBlock(currentBlockId);
-                if (currentBlock != null && currentBlock.opcode == "control_breakpoint") {
+                if (currentBlock != null && this.runtime.breakpointsEnabled &&currentBlock.opcode == "control_breakpoint") {
                     console.log("stepThread(): BREAKPOINT");
                     
                     // start single stepping this thread

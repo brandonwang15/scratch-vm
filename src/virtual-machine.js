@@ -204,6 +204,16 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Set whether the VM is breaks on breakpoints
+     * TODO(bdnwang):
+     * @param {boolean} isEnabled Whether breakpoints are enabled.
+     */
+    enableBreakpoints (isEnabled) {
+        this.runtime.breakpointsEnabled = !!isEnabled;
+    }
+
+
+    /**
      * Set whether the VM should advance a single step in "single step mode."
      * TODO(bdnwang):
      * @param {boolean} doStep Whether doStep should be set

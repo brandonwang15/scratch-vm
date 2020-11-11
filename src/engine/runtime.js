@@ -305,6 +305,12 @@ class Runtime extends EventEmitter {
         this.singleStepMode = false;
 
         /**
+         * Whether to break on breakpoint blocks.
+         * @type {Boolean}
+         */
+        this.breakpointsEnabled = true;
+
+        /**
          * Whether the project should advance a step when in "single step mode."
          * TODO(bdnwang): currently, a single "step" advances EACH active thread, by one step
          * @type {Boolean}
