@@ -289,6 +289,17 @@ class Sequencer {
                 this.retireThread(thread);
             } else {
                 execute(this, thread);
+
+                // Handle breakpoint blocks
+                let currentBlock = thread.blockContainer.getBlock(currentBlockId);
+                if (currentBlock != null && currentBlock.opcode == "control_breakpoint") {
+                    console.log("stepThread(): BREAKPOINT");
+                    
+                    // start single stepping this thread
+                    this.runtime.singleStepMode = true;
+                    this.runtime.currentThreadRef = thread; 
+                }
+                
             }
             thread.blockGlowInFrame = currentBlockId;
             
