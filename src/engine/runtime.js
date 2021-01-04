@@ -248,6 +248,13 @@ class Runtime extends EventEmitter {
         this._scriptGlowsPreviousFrame = [];
 
         /**
+         * A list of non-script block IDs that were glowing during the previous frame.
+         * @type {!Array.<!string>}
+         */
+        this._blockGlowsPreviousFrame = [];
+
+
+        /**
          * Number of non-monitor threads running during the previous frame.
          * @type {number}
          */
@@ -2189,15 +2196,27 @@ class Runtime extends EventEmitter {
             searchThreads.push.apply(searchThreads, optExtraThreads);
         }
         // Set of scripts that request a glow this frame.
-        const requestedGlowsThisFrame = [];
+        const requestedScriptGlowsThisFrame = [];
         // Final set of scripts glowing during this frame.
         const finalScriptGlows = [];
-        // Find all scripts that should be glowing.
+
+        // Set of blocks that request a block-level glow this frame
+        const requestedBlockGlowsThisFrame = [];
+        // Final set of blocks glowing during this frame
+        const finalBlockGlows = [];
+
+        // Find all scripts and blocks that should be glowing.
         for (let i = 0; i < searchThreads.length; i++) {
             const thread = searchThreads[i];
             const target = thread.target;
             if (target === this._editingTarget) {
                 const blockForThread = thread.blockGlowInFrame;
+                
+                // TODO(bdnwang): try to enable block-level glowing when single-stepping/paused
+                // TODO(bdnwang): should we only enable block glowing under certain conditions?
+                requestedBlockGlowsThisFrame.push(blockForThread);                
+                // this.glowBlock(blockForThread, true);
+
                 if (thread.requestScriptGlowInFrame || thread.stackClick) {
                     let script = target.blocks.getTopLevelScript(blockForThread);
                     if (!script) {
@@ -2207,7 +2226,7 @@ class Runtime extends EventEmitter {
                         );
                     }
                     if (script) {
-                        requestedGlowsThisFrame.push(script);
+                        requestedScriptGlowsThisFrame.push(script);
                     }
                 }
             }
@@ -2215,7 +2234,7 @@ class Runtime extends EventEmitter {
         // Compare to previous frame.
         for (let j = 0; j < this._scriptGlowsPreviousFrame.length; j++) {
             const previousFrameGlow = this._scriptGlowsPreviousFrame[j];
-            if (requestedGlowsThisFrame.indexOf(previousFrameGlow) < 0) {
+            if (requestedScriptGlowsThisFrame.indexOf(previousFrameGlow) < 0) {
                 // Glow turned off.
                 this.glowScript(previousFrameGlow, false);
             } else {
@@ -2223,8 +2242,8 @@ class Runtime extends EventEmitter {
                 finalScriptGlows.push(previousFrameGlow);
             }
         }
-        for (let k = 0; k < requestedGlowsThisFrame.length; k++) {
-            const currentFrameGlow = requestedGlowsThisFrame[k];
+        for (let k = 0; k < requestedScriptGlowsThisFrame.length; k++) {
+            const currentFrameGlow = requestedScriptGlowsThisFrame[k];
             if (this._scriptGlowsPreviousFrame.indexOf(currentFrameGlow) < 0) {
                 // Glow turned on.
                 this.glowScript(currentFrameGlow, true);
@@ -2232,6 +2251,27 @@ class Runtime extends EventEmitter {
             }
         }
         this._scriptGlowsPreviousFrame = finalScriptGlows;
+
+        // Compare to previous frame.
+        for (let j = 0; j < this._blockGlowsPreviousFrame.length; j++) {
+            const previousFrameGlow = this._blockGlowsPreviousFrame[j];
+            if (requestedBlockGlowsThisFrame.indexOf(previousFrameGlow) < 0) {
+                // Glow turned off.
+                this.glowBlock(previousFrameGlow, false);
+            } else {
+                // Still glowing.
+                finalBlockGlows.push(previousFrameGlow);
+            }
+        }
+        for (let k = 0; k < requestedBlockGlowsThisFrame.length; k++) {
+            const currentFrameGlow = requestedBlockGlowsThisFrame[k];
+            if (this._blockGlowsPreviousFrame.indexOf(currentFrameGlow) < 0) {
+                // Glow turned on.
+                this.glowBlock(currentFrameGlow, true);
+                finalBlockGlows.push(currentFrameGlow);
+            }
+        }
+        this._blockGlowsPreviousFrame = finalBlockGlows;
     }
 
     /**

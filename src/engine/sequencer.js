@@ -303,6 +303,9 @@ class Sequencer {
             }
             thread.blockGlowInFrame = currentBlockId;
             
+            // TODO(bdnwang): trying to add glow for paused block
+            // this.runtime.glowBlock(currentBlockId, true);
+            
             // If the thread has yielded or is waiting, yield to other threads.
             if (thread.status === Thread.STATUS_YIELD) {
                 // Mark as running for next iteration.
