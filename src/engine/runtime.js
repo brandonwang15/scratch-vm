@@ -2214,8 +2214,9 @@ class Runtime extends EventEmitter {
                 
                 // TODO(bdnwang): try to enable block-level glowing when single-stepping/paused
                 // TODO(bdnwang): should we only enable block glowing under certain conditions?
-                requestedBlockGlowsThisFrame.push(blockForThread);                
-                // this.glowBlock(blockForThread, true);
+                if (blockForThread != null) {
+                    requestedBlockGlowsThisFrame.push(blockForThread);                
+                }
 
                 if (thread.requestScriptGlowInFrame || thread.stackClick) {
                     let script = target.blocks.getTopLevelScript(blockForThread);
@@ -2267,6 +2268,7 @@ class Runtime extends EventEmitter {
             const currentFrameGlow = requestedBlockGlowsThisFrame[k];
             if (this._blockGlowsPreviousFrame.indexOf(currentFrameGlow) < 0) {
                 // Glow turned on.
+                console.log("glowing block: ", currentFrameGlow);
                 this.glowBlock(currentFrameGlow, true);
                 finalBlockGlows.push(currentFrameGlow);
             }
