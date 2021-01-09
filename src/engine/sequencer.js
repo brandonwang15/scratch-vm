@@ -296,7 +296,8 @@ class Sequencer {
                     console.log("stepThread(): BREAKPOINT");
                     
                     // start single stepping this thread
-                    this.runtime.singleStepMode = true;
+                    // this.runtime.singleStepMode = true; // does this trigger a React props update?
+                    this.runtime.setSingleStepMode(true);
                     this.runtime.currentThreadRef = thread; 
                 }
                 

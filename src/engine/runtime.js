@@ -724,7 +724,23 @@ class Runtime extends EventEmitter {
     static get BLOCKS_NEED_UPDATE () {
         return 'BLOCKS_NEED_UPDATE';
     }
+    
+    /**
+     * Event name for turning singleStepMode on.
+     * @const {string}
+     */
+    static get SINGLE_STEP_ON () {
+        return 'SINGLE_STEP_ON';
+    }
 
+    /**
+     * Event name for turning singleStepMode off.
+     * @const {string}
+     */
+    static get SINGLE_STEP_OFF () {
+        return 'SINGLE_STEP_OFF';
+    }
+    
     /**
      * How rapidly we try to step threads by default, in ms.
      */
@@ -2072,6 +2088,12 @@ class Runtime extends EventEmitter {
             this.profiler.start(stepProfilerId);
         }
 
+        // console.log("inside _step.");
+        console.log("singleStepMode: " + this.singleStepMode + "| doSingleStep: "+this.doSingleStep);
+
+        // isPaused: ownProps.vm.runtime.singleStepMode && state.scratchGui.vmStatus.running && !ownProps.vm.runtime.doSingleStep,
+
+
         // Clean up threads that were told to stop during or since the last step
         this.threads = this.threads.filter(thread => !thread.isKilled);
 
@@ -2679,6 +2701,26 @@ class Runtime extends EventEmitter {
     updateCurrentMSecs () {
         this.currentMSecs = Date.now();
     }
+
+    /**
+     * Set whether the runtime is in "single step mode."
+     * TODO(bdnwang):
+     * @param {boolean} singleStepModeOn Whether single step mode should be set.
+     */
+    setSingleStepMode (singleStepModeOn) {
+        console.log("runtime: setSingleStepMode() called with "+singleStepModeOn.toString());
+        this.singleStepMode = !!singleStepModeOn;
+   
+        if (this.singleStepMode) {
+            this.emit(Runtime.SINGLE_STEP_ON);
+        } else {
+            this.emit(Runtime.SINGLE_STEP_OFF);
+        }
+
+        this.emit(Runtime.TURBO_MODE_OFF);
+    }
+
+
 }
 
 /**

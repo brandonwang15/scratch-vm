@@ -151,6 +151,13 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData => {
             this.emit(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData);
         });
+        this.runtime.on(Runtime.SINGLE_STEP_OFF, () => {
+            this.emit(Runtime.SINGLE_STEP_OFF);
+        });
+        this.runtime.on(Runtime.SINGLE_STEP_ON, () => {
+            this.emit(Runtime.SINGLE_STEP_ON);
+        });
+
 
         this.extensionManager = new ExtensionManager(this.runtime);
 
@@ -200,7 +207,8 @@ class VirtualMachine extends EventEmitter {
      * @param {boolean} singleStepModeOn Whether single step mode should be set.
      */
     setSingleStepMode (singleStepModeOn) {
-        this.runtime.singleStepMode = !!singleStepModeOn;
+        // this.runtime.singleStepMode = !!singleStepModeOn;
+        this.runtime.setSingleStepMode(singleStepModeOn);
     }
 
     /**
